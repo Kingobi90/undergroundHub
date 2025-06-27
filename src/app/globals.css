@@ -1,0 +1,191 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-bg: #121212;
+  --secondary-bg: #1e1e1e;
+  --accent: #FEDA3C;
+  --text-primary: #FFFFFF;
+  --text-secondary: #AAAAAA;
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
+}
+
+body {
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+  font-family: 'Roboto', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-primary-bg text-text-primary;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply text-text-primary hover:text-accent transition-colors;
+  }
+  
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors;
+  }
+  
+  .btn-primary {
+    @apply bg-accent text-black hover:bg-opacity-80;
+  }
+}
+
+@keyframes slide-left {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Custom component styles */
+.card {
+  background-color: #1e1e1e;
+  border: 1px solid rgba(254, 218, 60, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0 15px rgba(254, 218, 60, 0.3);
+  border-color: rgba(254, 218, 60, 1);
+}
+
+.section-header {
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #FEDA3C;
+  color: #121212;
+}
+
+.btn-primary:hover {
+  background-color: transparent;
+  color: #FEDA3C;
+  border: 1px solid #FEDA3C;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #FEDA3C;
+  border: 1px solid #FEDA3C;
+}
+
+.btn-secondary:hover {
+  background-color: #FEDA3C;
+  color: #121212;
+}
+
+.nav-link {
+  position: relative;
+  padding: 0.5rem 0.75rem;
+  color: #FFFFFF;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #FEDA3C;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #FEDA3C;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.glow-effect {
+  transition: all 0.3s ease;
+}
+
+.glow-effect:hover {
+  box-shadow: 0 0 15px rgba(254, 218, 60, 0.3);
+}
+
+/* Campus Map Styles */
+.marker-icon {
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  display: block;
+  border: 2px solid #FFD700;
+  animation: pulse 2s infinite;
+}
+
+.marker-icon.high {
+  background-color: #FF0000;
+  box-shadow: 0 0 10px #FF0000;
+}
+
+.marker-icon.medium {
+  background-color: #FFA500;
+  box-shadow: 0 0 10px #FFA500;
+}
+
+.marker-icon.low {
+  background-color: #00FF00;
+  box-shadow: 0 0 10px #00FF00;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(0.8); opacity: 1; }
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+  background: #111;
+  color: #fff;
+  border: 1px solid #FFD700;
+}
+
+.custom-popup .leaflet-popup-tip {
+  background: #111;
+}
+
+.custom-popup h3 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  color: #FFD700;
+}
+
+.building-floors {
+  display: none;
+}
+
+.building-floors.active {
+  display: block;
+}
