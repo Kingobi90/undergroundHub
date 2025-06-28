@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UG Campus Crowd Map</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    body { 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #111;
+      color: #fff;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    #sidebar {
+      width: 300px;
+      background: #111;
+      color: #fff;
+      padding: 15px;
+      overflow-y: auto;
+      border-right: 2px solid #FFD700;
+    }
+    #sidebar h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #FFD700;
+      border-bottom: 1px solid #FFD700;
+      padding-bottom: 10px;
+    }
+    .building-section {
+      margin-bottom: 20px;
+    }
+    .building-header {
+      background: #222;
+      padding: 10px;
+      margin-bottom: 5px;
+      border-left: 3px solid #FFD700;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .building-header:hover {
+      background: #333;
+    }
+    .building-floors {
+      margin-left: 15px;
+      display: none;
+    }
+    .building-floors.active {
+      display: block;
+    }
+    .floor-item {
+      padding: 8px;
+      margin-bottom: 3px;
+      background: #1a1a1a;
+      border-left: 2px solid #444;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+    }
+    .floor-item:hover {
+      background: #2a2a2a;
+      border-left-color: #FFD700;
+    }
+    .crowd-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .crowd-level {
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .high { 
+      background-color: #FF0000; 
+    }
+    .medium { 
+      background-color: #FFA500; 
+    }
+    .low { 
+      background-color: #00FF00; 
+    }
+    #map-container {
+      flex-grow: 1;
+      position: relative;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    .custom-popup .leaflet-popup-content-wrapper {
+      background: #111;
+      color: #fff;
+      border: 1px solid #FFD700;
+    }
+    .custom-popup .leaflet-popup-tip {
+      background: #111;
+    }
+    .custom-popup h3 {
+      margin-top: 0;
+      margin-bottom: 5px;
+      color: #FFD700;
+    }
+    .loading-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: #FFD700;
+      padding: 15px 20px;
+      border-radius: 4px;
+      z-index: 1000;
+      border: 1px solid #FFD700;
+    }
+    
+    /* Pulsing marker animation */
+    @keyframes pulse {
+      0% { transform: scale(0.8); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+      100% { transform: scale(0.8); opacity: 1; }
+    }
+    
+    .marker-icon {
+      border-radius: 50%;
+      width: 15px;
+      height: 15px;
+      display: block;
+      border: 2px solid #FFD700;
+      animation: pulse 2s infinite;
+    }
+    
+    .marker-icon.high {
+      background-color: #FF0000;
+      box-shadow: 0 0 10px #FF0000;
+    }
+    
+    .marker-icon.medium {
+      background-color: #FFA500;
+      box-shadow: 0 0 10px #FFA500;
+    }
+    
+    .marker-icon.low {
+      background-color: #00FF00;
+      box-shadow: 0 0 10px #00FF00;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="sidebar">
+      <h2>🏢 Campus Crowd</h2>
+      
+      <!-- LB Building with floors -->
+      <div class="building-section">
+        <div class="building-header" onclick="toggleFloors('lb-floors')">
+          <span>LB Library</span>
+          <span class="crowd-level medium">Medium</span>
+        </div>
+        <div id="lb-floors" class="building-floors">
+          <div class="floor-item" onclick="focusLocation('lb-2')">
+            <span>Floor 2</span>
+            <span class="crowd-level high">High</span>
+          </div>
+          <div class="floor-item" onclick="focusLocation('lb-3')">
+            <span>Floor 3</span>
+            <span class="crowd-level medium">Medium</span>
+          </div>
+          <div class="floor-item" onclick="focusLocation('lb-4')">
+            <span>Floor 4</span>
+            <span class="crowd-level low">Low</span>
+          </div>
+          <div class="floor-item" onclick="focusLocation('lb-5')">
+            <span>Floor 5</span>
+            <span class="crowd-level low">Low</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Hall Building with floors -->
+      <div class="building-section">
+        <div class="building-header" onclick="toggleFloors('hall-floors')">
+          <span>Hall Building</span>
+          <span class="crowd-level high">High</span>
+        </div>
+        <div id="hall-floors" class="building-floors">
+          <div class="floor-item" onclick="focusLocation('hall-2')">
+            <span>Floor 2</span>
+            <span class="crowd-level high">High</span>
+          </div>
+          <div class="floor-item" onclick="focusLocation('hall-3')">
+            <span>Floor 3</span>
+            <span class="crowd-level high">High</span>
+          </div>
+          <div class="floor-item" onclick="focusLocation('hall-4')">
+            <span>Floor 4</span>
+            <span class="crowd-level medium">Medium</span>
+          </div>
+          <div class="floor-item" onclick="focusLocation('hall-5')">
+            <span>Floor 5</span>
+            <span class="crowd-level medium">Medium</span>
+          </div>
+          <div class="floor-item" onclick="focusLocation('hall-6')">
+            <span>Floor 6</span>
+            <span class="crowd-level low">Low</span>
+          </div>
+          <div class="floor-item" onclick="focusLocation('hall-7')">
+            <span>Floor 7</span>
+            <span class="crowd-level low">Low</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Other buildings -->
+      <div class="building-section">
+        <div class="building-header" onclick="focusLocation('ev')">
+          <span>EV Building</span>
+          <span class="crowd-level medium">Medium</span>
+        </div>
+      </div>
+      
+      <div class="building-section">
+        <div class="building-header" onclick="focusLocation('mb')">
+          <span>MB Building</span>
+          <span class="crowd-level low">Low</span>
+        </div>
+      </div>
+      
+      <div class="building-section">
+        <div class="building-header" onclick="focusLocation('fg')">
+          <span>FG Building</span>
+          <span class="crowd-level low">Low</span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="map-container">
+      <div id="map"></div>
+      <div class="loading-message">Loading map...</div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Location data
+    const locations = {
+      'ev': {
+        name: "EV Building",
+        coordinates: [45.4952, -73.5789],
+        crowdLevel: "medium",
+        peopleCount: "40+",
+        lastUpdated: "2 mins ago"
+      },
+      'lb-2': {
+        name: "LB Library - Floor 2",
+        coordinates: [45.4970, -73.5774],
+        crowdLevel: "high",
+        peopleCount: "55+",
+        lastUpdated: "3 mins ago"
+      },
+      'lb-3': {
+        name: "LB Library - Floor 3",
+        coordinates: [45.4970, -73.5774],
+        crowdLevel: "medium",
+        peopleCount: "30+",
+        lastUpdated: "4 mins ago"
+      },
+      'lb-4': {
+        name: "LB Library - Floor 4",
+        coordinates: [45.4970, -73.5774],
+        crowdLevel: "low",
+        peopleCount: "15+",
+        lastUpdated: "5 mins ago"
+      },
+      'lb-5': {
+        name: "LB Library - Floor 5",
+        coordinates: [45.4970, -73.5774],
+        crowdLevel: "low",
+        peopleCount: "10+",
+        lastUpdated: "6 mins ago"
+      },
+      'hall-2': {
+        name: "Hall Building - Floor 2",
+        coordinates: [45.4973, -73.5790],
+        crowdLevel: "high",
+        peopleCount: "60+",
+        lastUpdated: "2 mins ago"
+      },
+      'hall-3': {
+        name: "Hall Building - Floor 3",
+        coordinates: [45.4973, -73.5790],
+        crowdLevel: "high",
+        peopleCount: "50+",
+        lastUpdated: "3 mins ago"
+      },
+      'hall-4': {
+        name: "Hall Building - Floor 4",
+        coordinates: [45.4973, -73.5790],
+        crowdLevel: "medium",
+        peopleCount: "35+",
+        lastUpdated: "4 mins ago"
+      },
+      'hall-5': {
+        name: "Hall Building - Floor 5",
+        coordinates: [45.4973, -73.5790],
+        crowdLevel: "medium",
+        peopleCount: "30+",
+        lastUpdated: "5 mins ago"
+      },
+      'hall-6': {
+        name: "Hall Building - Floor 6",
+        coordinates: [45.4973, -73.5790],
+        crowdLevel: "low",
+        peopleCount: "15+",
+        lastUpdated: "6 mins ago"
+      },
+      'hall-7': {
+        name: "Hall Building - Floor 7",
+        coordinates: [45.4973, -73.5790],
+        crowdLevel: "low",
+        peopleCount: "10+",
+        lastUpdated: "7 mins ago"
+      },
+      'mb': {
+        name: "MB Building",
+        coordinates: [45.4953, -73.5798],
+        crowdLevel: "low",
+        peopleCount: "20+",
+        lastUpdated: "5 mins ago"
+      },
+      'fg': {
+        name: "FG Building",
+        coordinates: [45.4945, -73.5780],
+        crowdLevel: "low",
+        peopleCount: "15+",
+        lastUpdated: "8 mins ago"
+      }
+    };
+
+    // Initialize map
+    document.addEventListener('DOMContentLoaded', function() {
+      initMap();
+    });
+
+    function initMap() {
+      try {
+        // Create map with dark theme
+        const map = L.map('map').setView([45.4970, -73.5774], 16);
+        
+        // Add dark theme tiles
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 19
+        }).addTo(map);
+
+        // Hide loading message
+        document.querySelector('.loading-message').style.display = 'none';
+        
+        // Add markers
+        const markers = {};
+        
+        // Add main building markers
+        addMarker(map, markers, 'ev', locations['ev']);
+        addMarker(map, markers, 'lb-2', locations['lb-2']); // Main LB marker shows floor 2
+        addMarker(map, markers, 'hall-2', locations['hall-2']); // Main Hall marker shows floor 2
+        addMarker(map, markers, 'mb', locations['mb']);
+        addMarker(map, markers, 'fg', locations['fg']);
+        
+        // Store map and markers globally
+        window.campusMap = map;
+        window.campusMarkers = markers;
+
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        document.querySelector('.loading-message').textContent = 'Error initializing map: ' + error.message;
+      }
+    }
+    
+    function addMarker(map, markers, id, location) {
+      // Create custom icon
+      const icon = L.divIcon({
+        className: '',
+        html: `<div class="marker-icon ${location.crowdLevel}"></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+      
+      // Create marker with popup
+      const marker = L.marker(location.coordinates, {icon: icon})
+        .addTo(map)
+        .bindPopup(`
+          <h3>${location.name}</h3>
+          <p>${location.peopleCount} people here</p>
+          <p><i>Updated ${location.lastUpdated}</i></p>
+        `, {
+          className: 'custom-popup'
+        });
+      
+      markers[id] = marker;
+    }
+    
+    function focusLocation(id) {
+      const map = window.campusMap;
+      const markers = window.campusMarkers;
+      const location = locations[id];
+      
+      if (!map || !markers || !location) return;
+      
+      // If it's a floor, use the main building marker
+      const mainId = id.split('-')[0];
+      const markerId = markers[id] ? id : mainId + '-2'; // Default to floor 2 if specific floor marker doesn't exist
+      
+      // Fly to location
+      map.setView(location.coordinates, 18, {
+        animate: true,
+        duration: 1
+      });
+      
+      // Open popup
+      if (markers[markerId]) {
+        markers[markerId].openPopup();
+      }
+    }
+    
+    function toggleFloors(id) {
+      const floorsElement = document.getElementById(id);
+      if (floorsElement) {
+        floorsElement.classList.toggle('active');
+      }
+    }
+  </script>
+</body>
+</html>

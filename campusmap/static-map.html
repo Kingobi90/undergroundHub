@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Static Campus Map</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #111;
+      color: #fff;
+    }
+    
+    .container {
+      display: flex;
+      max-width: 1000px;
+      margin: 0 auto;
+      height: 80vh;
+    }
+    
+    #sidebar {
+      width: 250px;
+      background: #222;
+      padding: 20px;
+      border-radius: 10px 0 0 10px;
+    }
+    
+    #map-area {
+      flex-grow: 1;
+      background: #1a1a1a;
+      border-radius: 0 10px 10px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .map-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .building-item {
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #333;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .building-item:hover {
+      background: #444;
+    }
+    
+    .crowd-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .high { background-color: #FF0000; }
+    .medium { background-color: #FFA500; }
+    .low { background-color: #00FF00; }
+    
+    .marker {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid white;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+    }
+    
+    .popup {
+      position: absolute;
+      background: #222;
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+      width: 150px;
+      transform: translate(-50%, -120%);
+      display: none;
+      z-index: 10;
+    }
+    
+    .popup::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 10px solid #222;
+    }
+    
+    .marker:hover .popup {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="sidebar">
+      <h2>🏢 Campus Crowd</h2>
+      <div class="building-item" onclick="focusBuilding('ev')">
+        <span class="crowd-indicator high"></span>
+        EV Building
+      </div>
+      <div class="building-item" onclick="focusBuilding('lb')">
+        <span class="crowd-indicator medium"></span>
+        LB Library
+      </div>
+      <div class="building-item" onclick="focusBuilding('mb')">
+        <span class="crowd-indicator low"></span>
+        MB Building
+      </div>
+    </div>
+    
+    <div id="map-area">
+      <!-- Static map image of Concordia University area -->
+      <img src="https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/-73.5774,45.4970,14,0/800x600?access_token=pk.eyJ1Ijoib2JpY2h1ayIsImEiOiJjbWNmYW13M3QwNmowMm9vaGx3NzQ0dzc0In0.3kmBtUerBzbGCFC49iBPPA" class="map-image" alt="Campus Map">
+      
+      <!-- Building markers -->
+      <div id="ev" class="marker high" style="top: 40%; left: 30%;">
+        <div class="popup">
+          <h3>EV Building</h3>
+          <p>60+ people here</p>
+          <p><i>Updated 2 mins ago</i></p>
+        </div>
+      </div>
+      
+      <div id="lb" class="marker medium" style="top: 30%; left: 50%;">
+        <div class="popup">
+          <h3>LB Library</h3>
+          <p>35+ people here</p>
+          <p><i>Updated 3 mins ago</i></p>
+        </div>
+      </div>
+      
+      <div id="mb" class="marker low" style="top: 60%; left: 70%;">
+        <div class="popup">
+          <h3>MB Building</h3>
+          <p>10+ people here</p>
+          <p><i>Updated 5 mins ago</i></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function focusBuilding(id) {
+      // Remove focus from all buildings
+      document.querySelectorAll('.marker').forEach(marker => {
+        marker.style.zIndex = 1;
+        marker.style.width = '20px';
+        marker.style.height = '20px';
+        marker.querySelector('.popup').style.display = 'none';
+      });
+      
+      // Focus on selected building
+      const building = document.getElementById(id);
+      building.style.zIndex = 10;
+      building.style.width = '30px';
+      building.style.height = '30px';
+      building.querySelector('.popup').style.display = 'block';
+      
+      // Hide popup after 3 seconds
+      setTimeout(() => {
+        building.querySelector('.popup').style.display = 'none';
+        building.style.width = '20px';
+        building.style.height = '20px';
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

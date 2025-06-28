@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; img-src * data: blob: 'unsafe-inline'; connect-src * 'unsafe-inline';">
+  <title>Mapbox Alternate Example</title>
+  <!-- Mapbox CSS -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+  <style>
+    body { 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    #sidebar {
+      width: 250px;
+      background: #222;
+      color: white;
+      padding: 15px;
+      overflow-y: auto;
+    }
+    #sidebar h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    .building-item {
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #333;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .building-item:hover {
+      background: #444;
+    }
+    .crowd-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .high { background-color: #FF0000; }
+    .medium { background-color: #FFA500; }
+    .low { background-color: #00FF00; }
+    #map-container {
+      flex-grow: 1;
+      position: relative;
+    }
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+    .mapboxgl-popup-content {
+      background: #222;
+      color: white;
+      padding: 15px;
+      border-radius: 4px;
+    }
+    .mapboxgl-popup-tip {
+      border-top-color: #222;
+    }
+    .mapboxgl-popup h3 {
+      margin-top: 0;
+      margin-bottom: 5px;
+    }
+    .loading-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 4px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="sidebar">
+      <h2>🏢 Campus Crowd</h2>
+      <div class="building-item" data-id="ev">
+        <span class="crowd-indicator high"></span>
+        EV Building
+      </div>
+      <div class="building-item" data-id="lb">
+        <span class="crowd-indicator medium"></span>
+        LB Library
+      </div>
+      <div class="building-item" data-id="mb">
+        <span class="crowd-indicator low"></span>
+        MB Building
+      </div>
+    </div>
+    <div id="map-container">
+      <div id="map"></div>
+      <div class="loading-message">Loading map...</div>
+    </div>
+  </div>
+
+  <!-- Mapbox JS -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <script>
+    // Building data
+    const buildings = {
+      ev: {
+        name: "EV Building",
+        coordinates: [-73.5789, 45.4952],
+        crowdLevel: "high",
+        peopleCount: "60+",
+        lastUpdated: "2 mins ago"
+      },
+      lb: {
+        name: "LB Library",
+        coordinates: [-73.5774, 45.4970],
+        crowdLevel: "medium",
+        peopleCount: "35+",
+        lastUpdated: "3 mins ago"
+      },
+      mb: {
+        name: "MB Building",
+        coordinates: [-73.5798, 45.4953],
+        crowdLevel: "low",
+        peopleCount: "10+",
+        lastUpdated: "5 mins ago"
+      }
+    };
+
+    // Initialize map with a delay to ensure DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(initMap, 500);
+    });
+
+    function initMap() {
+      // Set access token
+      mapboxgl.accessToken = 'pk.eyJ1Ijoib2JpY2h1ayIsImEiOiJjbWNmYW13M3QwNmowMm9vaGx3NzQ0dzc0In0.3kmBtUerBzbGCFC49iBPPA';
+      
+      try {
+        // Create map
+        const map = new mapboxgl.Map({
+          container: 'map',
+          style: 'mapbox://styles/mapbox/dark-v11',
+          center: [-73.5774, 45.4970], // Concordia University
+          zoom: 15,
+          attributionControl: false
+        });
+
+        // Add navigation controls
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Hide loading message when map loads
+        map.on('load', function() {
+          document.querySelector('.loading-message').style.display = 'none';
+          console.log('Map loaded successfully');
+          
+          // Add markers after map loads
+          addMarkers(map);
+        });
+
+        // Handle sidebar clicks
+        document.querySelectorAll('.building-item').forEach(item => {
+          item.addEventListener('click', function() {
+            const buildingId = this.getAttribute('data-id');
+            const building = buildings[buildingId];
+            
+            // Fly to building
+            map.flyTo({
+              center: building.coordinates,
+              zoom: 17,
+              essential: true
+            });
+          });
+        });
+
+        // Log any errors
+        map.on('error', function(e) {
+          console.error('Mapbox error:', e);
+          document.querySelector('.loading-message').textContent = 'Error loading map. Check console for details.';
+        });
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        document.querySelector('.loading-message').textContent = 'Error initializing map: ' + error.message;
+      }
+    }
+
+    function addMarkers(map) {
+      // Add markers for each building
+      Object.keys(buildings).forEach(id => {
+        const building = buildings[id];
+        
+        // Create popup
+        const popup = new mapboxgl.Popup({ offset: 25 })
+          .setHTML(`
+            <h3>${building.name}</h3>
+            <p>${building.peopleCount} people here</p>
+            <p><i>Updated ${building.lastUpdated}</i></p>
+          `);
+        
+        // Create marker
+        const marker = new mapboxgl.Marker({
+          color: getColorForCrowdLevel(building.crowdLevel)
+        })
+          .setLngLat(building.coordinates)
+          .setPopup(popup)
+          .addTo(map);
+      });
+    }
+
+    function getColorForCrowdLevel(level) {
+      switch(level) {
+        case 'high': return '#FF0000';
+        case 'medium': return '#FFA500';
+        case 'low': return '#00FF00';
+        default: return '#FFFFFF';
+      }
+    }
+  </script>
+</body>
+</html>

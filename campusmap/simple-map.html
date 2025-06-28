@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UG Campus Crowd Map</title>
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+  <style>
+    body { margin: 0; padding: 0; }
+    
+    .container {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+    
+    #sidebar {
+      background: #111;
+      color: #fff;
+      padding: 20px;
+      width: 250px;
+      font-family: sans-serif;
+      z-index: 2;
+    }
+    
+    #sidebar h2 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-item {
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+    
+    .crowd-bar {
+      background: #333;
+      height: 10px;
+      width: 100%;
+      border-radius: 3px;
+      margin-top: 5px;
+    }
+    
+    .high {
+      background: #FF0000;
+      height: 10px;
+      width: 80%;
+      border-radius: 3px;
+    }
+    
+    .moderate {
+      background: #FFA500;
+      height: 10px;
+      width: 50%;
+      border-radius: 3px;
+    }
+    
+    .low {
+      background: #00FF00;
+      height: 10px;
+      width: 25%;
+      border-radius: 3px;
+    }
+    
+    #map {
+      flex-grow: 1;
+      height: 100%;
+      position: relative;
+    }
+
+    .mapboxgl-popup {
+      max-width: 200px;
+    }
+
+    .mapboxgl-popup-content {
+      background: #222;
+      color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .marker {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #000;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div id="sidebar">
+      <h2>🏢 Crowd Levels</h2>
+      <div class="location-item" onclick="centerMap([-73.5788, 45.4969])">
+        EV Building
+        <div class="crowd-bar">
+          <div class="high"></div>
+        </div>
+      </div>
+      <div class="location-item" onclick="centerMap([-73.5795, 45.4955])">
+        LB Library
+        <div class="crowd-bar">
+          <div class="moderate"></div>
+        </div>
+      </div>
+      <div class="location-item" onclick="centerMap([-73.5770, 45.4945])">
+        MB Building
+        <div class="crowd-bar">
+          <div class="low"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div id="map"></div>
+  </div>
+
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1Ijoib2JpY2h1ayIsImEiOiJjbWNmYW13M3QwNmowMm9vaGx3NzQ0dzc0In0.3kmBtUerBzbGCFC49iBPPA';
+    
+    // Wait for the DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      // Create the map
+      const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [-73.579, 45.497],
+        zoom: 16,
+        antialias: true
+      });
+
+      // Add navigation controls
+      map.addControl(new mapboxgl.NavigationControl());
+      
+      // Handle map load errors
+      map.on('error', (e) => {
+        console.error('Mapbox error:', e);
+      });
+
+      const locations = [
+      {
+        name: "EV Building",
+        coords: [-73.5788, 45.4969],
+        density: "high",
+        crowdCount: 60,
+        lastUpdated: "2 mins ago"
+      },
+      {
+        name: "LB Library",
+        coords: [-73.5795, 45.4955],
+        density: "moderate",
+        crowdCount: 35,
+        lastUpdated: "3 mins ago"
+      },
+      {
+        name: "MB Building",
+        coords: [-73.5770, 45.4945],
+        density: "low",
+        crowdCount: 10,
+        lastUpdated: "5 mins ago"
+      }
+    ];
+
+    map.on('load', () => {
+      locations.forEach(loc => {
+        const el = document.createElement('div');
+        el.className = 'marker';
+        el.style.backgroundColor = loc.density === 'high' ? '#FF0000' : loc.density === 'moderate' ? '#FFA500' : '#00FF00';
+        el.style.boxShadow = `0 0 10px ${loc.density === 'high' ? '#FF0000' : loc.density === 'moderate' ? '#FFA500' : '#00FF00'}`;
+
+        new mapboxgl.Marker(el)
+          .setLngLat(loc.coords)
+          .setPopup(new mapboxgl.Popup().setHTML(`
+            <b>${loc.name}</b><br>
+            ${loc.crowdCount}+ people here<br>
+            <i>Reported ${loc.lastUpdated}</i>
+          `))
+          .addTo(map);
+      });
+    });
+
+    function centerMap(coords) {
+      map.flyTo({ center: coords, zoom: 17 });
+    }
+    
+    // End of DOMContentLoaded event listener
+    });
+  </script>
+</body>
+</html>

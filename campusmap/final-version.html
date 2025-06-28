@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UG Campus Crowd Map</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #111;
+      color: #fff;
+      padding: 20px;
+    }
+    
+    .container {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 80vh;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    #sidebar {
+      background: #222;
+      color: #fff;
+      padding: 20px;
+      width: 250px;
+      overflow-y: auto;
+    }
+    
+    #sidebar h2 {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      font-size: 18px;
+    }
+    
+    .building {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .building:hover {
+      background-color: #333;
+    }
+    
+    .building.active {
+      background-color: #333;
+      border-left: 3px solid #fff;
+    }
+    
+    .building-name {
+      margin-bottom: 5px;
+      display: block;
+    }
+    
+    .bar-bg {
+      background: #333;
+      height: 10px;
+      width: 100%;
+      border-radius: 5px;
+    }
+    
+    .bar-fill {
+      height: 10px;
+      border-radius: 5px;
+    }
+    
+    .bar-fill.high {
+      background: #FF0000;
+      width: 80%;
+    }
+    
+    .bar-fill.medium {
+      background: #FFA500;
+      width: 50%;
+    }
+    
+    .bar-fill.low {
+      background: #00FF00;
+      width: 25%;
+    }
+    
+    #campus-map {
+      flex-grow: 1;
+      background: #1a1a1a;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .grid-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(20, 1fr);
+      grid-template-rows: repeat(20, 1fr);
+      opacity: 0.2;
+    }
+    
+    .grid-cell {
+      border: 1px solid #333;
+    }
+    
+    .road {
+      position: absolute;
+      background-color: #333;
+    }
+    
+    .road-h {
+      height: 10px;
+    }
+    
+    .road-v {
+      width: 10px;
+    }
+    
+    .building-marker {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+    
+    .building-marker:hover {
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+    
+    .building-marker.high {
+      background-color: #FF0000;
+      box-shadow: 0 0 15px #FF0000;
+    }
+    
+    .building-marker.medium {
+      background-color: #FFA500;
+      box-shadow: 0 0 15px #FFA500;
+    }
+    
+    .building-marker.low {
+      background-color: #00FF00;
+      box-shadow: 0 0 15px #00FF00;
+    }
+    
+    .popup {
+      position: absolute;
+      background: #222;
+      color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      width: 200px;
+      transform: translate(-50%, -120%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .popup::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 10px solid #222;
+    }
+    
+    .building-marker:hover .popup {
+      opacity: 1;
+    }
+    
+    .building-label {
+      position: absolute;
+      color: #fff;
+      font-size: 12px;
+      transform: translate(-50%, 20px);
+      text-align: center;
+      text-shadow: 0 0 5px #000;
+    }
+    
+    /* Pulsing animation */
+    @keyframes pulse {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.1); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    /* Campus area */
+    .campus-area {
+      position: absolute;
+      border: 2px dashed #444;
+      border-radius: 50%;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="sidebar">
+      <h2>🏢 Campus Crowd Levels</h2>
+      
+      <div class="building" data-id="ev">
+        <span class="building-name">EV Building</span>
+        <div class="bar-bg">
+          <div class="bar-fill high"></div>
+        </div>
+      </div>
+      
+      <div class="building" data-id="lb">
+        <span class="building-name">LB Library</span>
+        <div class="bar-bg">
+          <div class="bar-fill medium"></div>
+        </div>
+      </div>
+      
+      <div class="building" data-id="mb">
+        <span class="building-name">MB Building</span>
+        <div class="bar-bg">
+          <div class="bar-fill low"></div>
+        </div>
+      </div>
+      
+      <div class="building" data-id="hall">
+        <span class="building-name">Hall Building</span>
+        <div class="bar-bg">
+          <div class="bar-fill medium"></div>
+        </div>
+      </div>
+      
+      <div class="building" data-id="finearts">
+        <span class="building-name">Fine Arts Building</span>
+        <div class="bar-bg">
+          <div class="bar-fill low"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="campus-map">
+      <!-- Grid background -->
+      <div class="grid-bg">
+        <!-- Grid cells will be added by JavaScript -->
+      </div>
+      
+      <!-- Campus areas -->
+      <div class="campus-area" style="top: 50%; left: 50%; width: 70%; height: 70%;"></div>
+      <div class="campus-area" style="top: 30%; left: 30%; width: 30%; height: 30%;"></div>
+      
+      <!-- Roads -->
+      <div class="road road-h" style="top: 30%; left: 0; width: 100%;"></div>
+      <div class="road road-h" style="top: 60%; left: 0; width: 100%;"></div>
+      <div class="road road-v" style="top: 0; left: 30%; height: 100%;"></div>
+      <div class="road road-v" style="top: 0; left: 70%; height: 100%;"></div>
+      
+      <!-- Building markers -->
+      <div id="ev" class="building-marker high" style="top: 30%; left: 30%;">
+        <div class="popup">
+          <b>EV Building</b><br>
+          60+ people here<br>
+          <i>Reported 2 mins ago</i>
+        </div>
+        <div class="building-label">EV</div>
+      </div>
+      
+      <div id="lb" class="building-marker medium" style="top: 60%; left: 30%;">
+        <div class="popup">
+          <b>LB Library</b><br>
+          35+ people here<br>
+          <i>Reported 3 mins ago</i>
+        </div>
+        <div class="building-label">LB</div>
+      </div>
+      
+      <div id="mb" class="building-marker low" style="top: 45%; left: 70%;">
+        <div class="popup">
+          <b>MB Building</b><br>
+          10+ people here<br>
+          <i>Reported 5 mins ago</i>
+        </div>
+        <div class="building-label">MB</div>
+      </div>
+      
+      <div id="hall" class="building-marker medium" style="top: 70%; left: 60%;">
+        <div class="popup">
+          <b>Hall Building</b><br>
+          30+ people here<br>
+          <i>Reported 4 mins ago</i>
+        </div>
+        <div class="building-label">Hall</div>
+      </div>
+      
+      <div id="finearts" class="building-marker low" style="top: 20%; left: 65%;">
+        <div class="popup">
+          <b>Fine Arts Building</b><br>
+          15+ people here<br>
+          <i>Reported 6 mins ago</i>
+        </div>
+        <div class="building-label">FA</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Create grid cells
+    const gridBg = document.querySelector('.grid-bg');
+    for (let i = 0; i < 400; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'grid-cell';
+      gridBg.appendChild(cell);
+    }
+    
+    // Add pulsing effect to markers based on crowd level
+    document.querySelectorAll('.building-marker.high').forEach(marker => {
+      marker.classList.add('pulse');
+    });
+    
+    // Handle sidebar building clicks
+    document.querySelectorAll('.building').forEach(item => {
+      item.addEventListener('click', function() {
+        // Get building ID
+        const buildingId = this.getAttribute('data-id');
+        
+        // Remove active class from all buildings
+        document.querySelectorAll('.building').forEach(b => {
+          b.classList.remove('active');
+        });
+        
+        // Add active class to clicked building
+        this.classList.add('active');
+        
+        // Focus on building marker
+        focusBuilding(buildingId);
+      });
+    });
+    
+    // Function to focus on a building
+    function focusBuilding(id) {
+      // Remove focus from all buildings
+      document.querySelectorAll('.building-marker').forEach(marker => {
+        marker.style.zIndex = 10;
+        marker.classList.remove('pulse');
+      });
+      
+      // Focus on selected building
+      const building = document.getElementById(id);
+      building.style.zIndex = 20;
+      building.classList.add('pulse');
+      
+      // Show popup
+      const popup = building.querySelector('.popup');
+      popup.style.opacity = 1;
+      
+      // Hide popup after 3 seconds
+      setTimeout(() => {
+        popup.style.opacity = 0;
+        
+        // Keep pulsing for high crowd buildings
+        if (!building.classList.contains('high')) {
+          building.classList.remove('pulse');
+        }
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

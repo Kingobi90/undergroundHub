@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; img-src * data: blob: 'unsafe-inline'; connect-src * 'unsafe-inline';">
+  <title>UG Campus Crowd Map</title>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Map + Sidebar Container -->
+  <div class="container">
+    
+    <!-- Sidebar -->
+    <div id="sidebar">
+      <h2><span class="icon">🏢</span> Crowd Levels</h2>
+      <div class="location-item" onclick="centerMap([-73.5788, 45.4969])">
+        <span class="location-name">EV Building</span>
+        <div class="crowd-bar">
+          <div class="crowd-level high"></div>
+        </div>
+      </div>
+      <div class="location-item" onclick="centerMap([-73.5795, 45.4955])">
+        <span class="location-name">LB Library</span>
+        <div class="crowd-bar">
+          <div class="crowd-level moderate"></div>
+        </div>
+      </div>
+      <div class="location-item" onclick="centerMap([-73.5770, 45.4945])">
+        <span class="location-name">MB Building</span>
+        <div class="crowd-bar">
+          <div class="crowd-level low"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div id="ug-map"></div>
+  </div>
+
+  <!-- Mapbox Scripts -->
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UG Campus Crowd Map</title>
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+    
+    .map-container {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+    }
+    
+    #sidebar {
+      background: #111;
+      color: #fff;
+      padding: 20px;
+      width: 250px;
+      z-index: 10;
+    }
+    
+    #sidebar h2 {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      font-size: 18px;
+    }
+    
+    .building {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .building:hover {
+      background-color: #222;
+    }
+    
+    .building-name {
+      margin-bottom: 5px;
+      display: block;
+    }
+    
+    .bar-bg {
+      background: #333;
+      height: 10px;
+      width: 100%;
+      border-radius: 5px;
+    }
+    
+    .bar-fill {
+      height: 10px;
+      border-radius: 5px;
+    }
+    
+    .bar-fill.high {
+      background: #FF0000;
+      width: 80%;
+    }
+    
+    .bar-fill.medium {
+      background: #FFA500;
+      width: 50%;
+    }
+    
+    .bar-fill.low {
+      background: #00FF00;
+      width: 25%;
+    }
+    
+    #map {
+      flex-grow: 1;
+    }
+    
+    .mapboxgl-popup {
+      max-width: 200px;
+    }
+    
+    .mapboxgl-popup-content {
+      background: #222;
+      color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    
+    .marker {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #000;
+      cursor: pointer;
+    }
+    
+    .marker.high {
+      background-color: #FF0000;
+      box-shadow: 0 0 10px #FF0000;
+    }
+    
+    .marker.medium {
+      background-color: #FFA500;
+      box-shadow: 0 0 10px #FFA500;
+    }
+    
+    .marker.low {
+      background-color: #00FF00;
+      box-shadow: 0 0 10px #00FF00;
+    }
+  </style>
+</head>
+<body>
+  <div class="map-container">
+    <div id="sidebar">
+      <h2>🏢 Crowd Levels</h2>
+      
+      <div class="building" onclick="flyToLocation('ev')">
+        <span class="building-name">EV Building</span>
+        <div class="bar-bg">
+          <div class="bar-fill high"></div>
+        </div>
+      </div>
+      
+      <div class="building" onclick="flyToLocation('lb')">
+        <span class="building-name">LB Library</span>
+        <div class="bar-bg">
+          <div class="bar-fill medium"></div>
+        </div>
+      </div>
+      
+      <div class="building" onclick="flyToLocation('mb')">
+        <span class="building-name">MB Building</span>
+        <div class="bar-bg">
+          <div class="bar-fill low"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="map"></div>
+  </div>
+
+  <script>
+    // Building data
+    const buildings = {
+      ev: {
+        name: "EV Building",
+        coordinates: [-73.5788, 45.4969],
+        crowdLevel: "high",
+        crowdCount: 60,
+        lastUpdated: "2 mins ago"
+      },
+      lb: {
+        name: "LB Library",
+        coordinates: [-73.5795, 45.4955],
+        crowdLevel: "medium",
+        crowdCount: 35,
+        lastUpdated: "3 mins ago"
+      },
+      mb: {
+        name: "MB Building",
+        coordinates: [-73.5770, 45.4945],
+        crowdLevel: "low",
+        crowdCount: 10,
+        lastUpdated: "5 mins ago"
+      }
+    };
+    
+    // Initialize map
+    mapboxgl.accessToken = 'pk.eyJ1Ijoib2JpY2h1ayIsImEiOiJjbWNmYW13M3QwNmowMm9vaGx3NzQ0dzc0In0.3kmBtUerBzbGCFC49iBPPA';
+    
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/dark-v11',
+      center: [-73.579, 45.497],
+      zoom: 16
+    });
+    
+    // Add navigation controls
+    map.addControl(new mapboxgl.NavigationControl());
+    
+    // Add markers when map loads
+    map.on('load', function() {
+      console.log('Map loaded');
+      
+      // Add markers for each building
+      Object.keys(buildings).forEach(key => {
+        const building = buildings[key];
+        
+        // Create marker element
+        const el = document.createElement('div');
+        el.className = `marker ${building.crowdLevel}`;
+        
+        // Add marker to map
+        new mapboxgl.Marker(el)
+          .setLngLat(building.coordinates)
+          .setPopup(
+            new mapboxgl.Popup()
+              .setHTML(`
+                <b>${building.name}</b><br>
+                ${building.crowdCount}+ people here<br>
+                <i>Reported ${building.lastUpdated}</i>
+              `)
+          )
+          .addTo(map);
+      });
+    });
+    
+    // Function to fly to a location
+    function flyToLocation(buildingKey) {
+      const building = buildings[buildingKey];
+      map.flyTo({
+        center: building.coordinates,
+        zoom: 17,
+        duration: 1500
+      });
+      
+      // Open popup after flying
+      setTimeout(() => {
+        const popup = new mapboxgl.Popup()
+          .setLngLat(building.coordinates)
+          .setHTML(`
+            <b>${building.name}</b><br>
+            ${building.crowdCount}+ people here<br>
+            <i>Reported ${building.lastUpdated}</i>
+          `)
+          .addTo(map);
+      }, 1500);
+    }
+    
+    // Handle map errors
+    map.on('error', function(e) {
+      console.error('Mapbox error:', e);
+    });
+  </script>
+</body>
+</html>

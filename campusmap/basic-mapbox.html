@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basic Mapbox Example</title>
+  <!-- Mapbox CSS -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Mapbox JS -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <script>
+    // Initialize map
+    mapboxgl.accessToken = 'pk.eyJ1Ijoib2JpY2h1ayIsImEiOiJjbWNmYW13M3QwNmowMm9vaGx3NzQ0dzc0In0.3kmBtUerBzbGCFC49iBPPA';
+    
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/dark-v11',
+      center: [-73.5774, 45.4970], // Concordia University coordinates
+      zoom: 14
+    });
+
+    // Add navigation controls
+    map.addControl(new mapboxgl.NavigationControl());
+
+    // Add a marker for Concordia University
+    const marker = new mapboxgl.Marker({color: '#FF0000'})
+      .setLngLat([-73.5774, 45.4970])
+      .setPopup(new mapboxgl.Popup().setHTML("<h3>Concordia University</h3><p>High crowd level</p>"))
+      .addTo(map);
+
+    // Log when map loads
+    map.on('load', function() {
+      console.log('Map loaded successfully');
+    });
+
+    // Log any errors
+    map.on('error', function(e) {
+      console.error('Mapbox error:', e);
+    });
+  </script>
+</body>
+</html>
