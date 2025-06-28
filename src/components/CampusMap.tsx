@@ -164,40 +164,49 @@ const CampusMap: React.FC<CampusMapProps> = ({ className = '' }) => {
   };
 
   useEffect(() => {
-    // Dynamic import of Leaflet since it's a client-side only library
-    if (typeof window !== 'undefined' && mapRef.current && !mapLoaded) {
+    // Check if map already exists and clean it up
+    if (leafletMapRef.current) {
+      leafletMapRef.current.remove();
+      leafletMapRef.current = null;
+      markersRef.current = {};
+    }
+    
+    if (mapRef.current) {
       import('leaflet').then((L) => {
-        // Create map with dark theme
-        const map = L.map(mapRef.current!).setView([45.4970, -73.5774], 16);
-        
-        // Add dark theme tiles
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: 'abcd',
-          maxZoom: 19
-        }).addTo(map);
+        // Make sure the map container hasn't been initialized yet
+        if (!leafletMapRef.current) {
+          // Create map with dark theme
+          const map = L.map(mapRef.current!).setView([45.4970, -73.5774], 16);
+          
+          // Add dark theme tiles
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+          }).addTo(map);
 
-        // Store map reference
-        leafletMapRef.current = map;
-        
-        // Add main building markers
-        addMarker(L, map, markersRef.current, 'ev', locations['ev']);
-        addMarker(L, map, markersRef.current, 'lb-2', locations['lb-2']); // Main LB marker shows floor 2
-        addMarker(L, map, markersRef.current, 'hall-2', locations['hall-2']); // Main Hall marker shows floor 2
-        addMarker(L, map, markersRef.current, 'mb', locations['mb']);
-        addMarker(L, map, markersRef.current, 'fg', locations['fg']);
-        
-        setMapLoaded(true);
+          // Store map reference
+          leafletMapRef.current = map;
+          
+          // Add markers for all locations
+          Object.values(locations).forEach(location => {
+            addMarker(L, map, markersRef.current, location.id, location);
+          });
+          
+          setMapLoaded(true);
+        }
       });
     }
     
+    // Cleanup function to remove map when component unmounts
     return () => {
-      // Clean up map on unmount
       if (leafletMapRef.current) {
         leafletMapRef.current.remove();
+        leafletMapRef.current = null;
+        markersRef.current = {};
       }
     };
-  }, [mapLoaded]);
+  }, []);
 
   // Function to add marker to map
   const addMarker = (L: any, map: any, markers: any, id: string, location: Location) => {
