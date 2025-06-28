@@ -46,7 +46,6 @@ const Footer: React.FC = () => {
         
         <div className="mt-6 pt-4 border-t border-accent/30 text-center text-xs opacity-75">
           <p>Powered by "Engineering failure"</p>
-          <p className="mt-1">Made with ❤️ by students, for students</p>
         </div>
       </div>
     </footer>
