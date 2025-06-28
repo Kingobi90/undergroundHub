@@ -25,112 +25,100 @@ const CampusMap: React.FC<CampusMapProps> = ({ className = '' }) => {
   const [showSidebar, setShowSidebar] = useState(true);
   const leafletMapRef = useRef<any>(null);
   const markersRef = useRef<{[key: string]: any}>({});
+  const [locationData, setLocationData] = useState<{[key: string]: Location}>({});
 
-  // Location data
-  const locations: {[key: string]: Location} = {
+  // Initial location data structure
+  const initialLocations: {[key: string]: Omit<Location, 'lastUpdated'>} = {
     'ev': {
       id: 'ev',
       name: "EV Building",
       coordinates: [45.4952, -73.5789],
       crowdLevel: "medium",
-      peopleCount: "40+",
-      lastUpdated: "2 mins ago"
+      peopleCount: "40+"
     },
     'lb-2': {
       id: 'lb-2',
       name: "LB Library - Floor 2",
       coordinates: [45.4970, -73.5774],
       crowdLevel: "high",
-      peopleCount: "55+",
-      lastUpdated: "3 mins ago"
+      peopleCount: "55+"
     },
     'lb-3': {
       id: 'lb-3',
       name: "LB Library - Floor 3",
       coordinates: [45.4970, -73.5774],
       crowdLevel: "medium",
-      peopleCount: "30+",
-      lastUpdated: "4 mins ago"
+      peopleCount: "30+"
     },
     'lb-4': {
       id: 'lb-4',
       name: "LB Library - Floor 4",
       coordinates: [45.4970, -73.5774],
       crowdLevel: "low",
-      peopleCount: "15+",
-      lastUpdated: "5 mins ago"
+      peopleCount: "15+"
     },
     'lb-5': {
       id: 'lb-5',
       name: "LB Library - Floor 5",
       coordinates: [45.4970, -73.5774],
       crowdLevel: "low",
-      peopleCount: "10+",
-      lastUpdated: "6 mins ago"
+      peopleCount: "10+"
     },
     'hall-2': {
       id: 'hall-2',
       name: "Hall Building - Floor 2",
       coordinates: [45.4973, -73.5790],
       crowdLevel: "high",
-      peopleCount: "60+",
-      lastUpdated: "2 mins ago"
+      peopleCount: "60+"
     },
     'hall-3': {
       id: 'hall-3',
       name: "Hall Building - Floor 3",
       coordinates: [45.4973, -73.5790],
       crowdLevel: "high",
-      peopleCount: "50+",
-      lastUpdated: "3 mins ago"
+      peopleCount: "50+"
     },
     'hall-4': {
       id: 'hall-4',
       name: "Hall Building - Floor 4",
       coordinates: [45.4973, -73.5790],
       crowdLevel: "medium",
-      peopleCount: "35+",
-      lastUpdated: "4 mins ago"
+      peopleCount: "35+"
     },
     'hall-5': {
       id: 'hall-5',
       name: "Hall Building - Floor 5",
       coordinates: [45.4973, -73.5790],
       crowdLevel: "medium",
-      peopleCount: "30+",
-      lastUpdated: "5 mins ago"
+      peopleCount: "30+"
     },
     'hall-6': {
       id: 'hall-6',
       name: "Hall Building - Floor 6",
       coordinates: [45.4973, -73.5790],
       crowdLevel: "low",
-      peopleCount: "15+",
-      lastUpdated: "6 mins ago"
+      peopleCount: "15+"
     },
     'hall-7': {
       id: 'hall-7',
       name: "Hall Building - Floor 7",
       coordinates: [45.4973, -73.5790],
       crowdLevel: "low",
-      peopleCount: "10+",
-      lastUpdated: "7 mins ago"
+      peopleCount: "10+"
     },
     'mb': {
       id: 'mb',
       name: "MB Building",
       coordinates: [45.4953, -73.5798],
       crowdLevel: "low",
-      peopleCount: "20+",
-      lastUpdated: "5 mins ago"
+      peopleCount: "20+"
     },
     'fg': {
       id: 'fg',
       name: "FG Building",
       coordinates: [45.4945, -73.5780],
       crowdLevel: "low",
-      peopleCount: "15+",
-      lastUpdated: "8 mins ago"
+      peopleCount: "15+"
     }
   };
 
@@ -163,6 +151,69 @@ const CampusMap: React.FC<CampusMapProps> = ({ className = '' }) => {
     }
   };
 
+  // Function to generate varied timestamps
+  const generateVariedTimestamps = () => {
+    const result: {[key: string]: Location} = {};
+    
+    // Create a map of location IDs to varied timestamps
+    const timestampMap: {[key: string]: number} = {};
+    
+    // Generate timestamps with more variation
+    // High crowd level locations will have more recent updates (1-15 mins)
+    // Medium crowd level locations will have medium recency (5-25 mins)
+    // Low crowd level locations will have less recent updates (10-45 mins)
+    Object.keys(initialLocations).forEach(key => {
+      const location = initialLocations[key];
+      let minTime = 1;
+      let maxTime = 15;
+      
+      if (location.crowdLevel === 'medium') {
+        minTime = 5;
+        maxTime = 25;
+      } else if (location.crowdLevel === 'low') {
+        minTime = 10;
+        maxTime = 45;
+      }
+      
+      // Ensure high crowded areas don't all have the same timestamp
+      if (location.crowdLevel === 'high') {
+        // For high crowded areas, ensure at least 5 mins difference between timestamps
+        const existingHighCrowdedTimes = Object.keys(timestampMap)
+          .filter(k => initialLocations[k].crowdLevel === 'high')
+          .map(k => timestampMap[k]);
+        
+        let time;
+        do {
+          time = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
+        } while (existingHighCrowdedTimes.includes(time));
+        
+        timestampMap[key] = time;
+      } else {
+        timestampMap[key] = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
+      }
+      
+      result[key] = {
+        ...location,
+        lastUpdated: `${timestampMap[key]} mins ago`
+      };
+    });
+    
+    return result;
+  };
+  
+  // Initialize location data with varied timestamps
+  useEffect(() => {
+    // Set initial data
+    setLocationData(generateVariedTimestamps());
+    
+    // Update timestamps every 5 minutes
+    const intervalId = setInterval(() => {
+      setLocationData(generateVariedTimestamps());
+    }, 5 * 60 * 1000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
+
   useEffect(() => {
     // Check if map already exists and clean it up
     if (leafletMapRef.current) {
@@ -189,7 +240,7 @@ const CampusMap: React.FC<CampusMapProps> = ({ className = '' }) => {
           leafletMapRef.current = map;
           
           // Add markers for all locations
-          Object.values(locations).forEach(location => {
+          Object.values(locationData).forEach(location => {
             addMarker(L, map, markersRef.current, location.id, location);
           });
           
@@ -206,7 +257,7 @@ const CampusMap: React.FC<CampusMapProps> = ({ className = '' }) => {
         markersRef.current = {};
       }
     };
-  }, []);
+  }, [locationData]);
 
   // Function to add marker to map
   const addMarker = (L: any, map: any, markers: any, id: string, location: Location) => {
@@ -240,7 +291,7 @@ const CampusMap: React.FC<CampusMapProps> = ({ className = '' }) => {
     
     const map = leafletMapRef.current;
     const markers = markersRef.current;
-    const location = locations[id];
+    const location = locationData[id];
     
     if (!map || !markers || !location) return;
     
@@ -260,11 +311,67 @@ const CampusMap: React.FC<CampusMapProps> = ({ className = '' }) => {
     }
   };
 
-  // Toggle floors visibility
-  const toggleFloors = (buildingId: string) => {
-    const floorsElement = document.getElementById(`${buildingId}-floors`);
-    if (floorsElement) {
-      floorsElement.classList.toggle('active');
+  // Get top 3 most crowded places
+  const getTopCrowdedPlaces = () => {
+    // Combine all locations and sort by crowd level
+    const allLocations = Object.values(locationData);
+    const sortedLocations = [...allLocations].sort((a, b) => {
+      const crowdLevels = { 'high': 3, 'medium': 2, 'low': 1 };
+      return crowdLevels[b.crowdLevel as keyof typeof crowdLevels] - crowdLevels[a.crowdLevel as keyof typeof crowdLevels];
+    });
+    
+    // Return top 3
+    return sortedLocations.slice(0, 3);
+  };
+  
+  const topCrowdedPlaces = getTopCrowdedPlaces();
+  
+  // Calculate crowd percentage for visualization
+  const getCrowdPercentage = (crowdLevel: string) => {
+    switch(crowdLevel) {
+      case 'high': return 90;
+      case 'medium': return 60;
+      case 'low': return 30;
+      default: return 0;
+    }
+  };
+  
+  // Get crowd level text description
+  const getCrowdLevelText = (crowdLevel: string) => {
+    switch(crowdLevel) {
+      case 'high': return 'Crowded';
+      case 'medium': return 'Moderate';
+      case 'low': return 'Empty';
+      default: return 'Unknown';
+    }
+  };
+  
+  // Get abbreviated location name
+  const getAbbreviatedName = (name: string) => {
+    // Extract building code and floor number
+    if (name.includes('LB') || name.includes('Library')) {
+      const floorMatch = name.match(/Floor (\d+)/);
+      return `LB ${floorMatch ? floorMatch[1] : ''}`;
+    } else if (name.includes('Hall')) {
+      const floorMatch = name.match(/Floor (\d+)/);
+      return `Hall ${floorMatch ? floorMatch[1] : ''}`;
+    } else if (name.includes('MB') || name.includes('Molson')) {
+      const floorMatch = name.match(/Floor (\d+)/);
+      return `MB ${floorMatch ? floorMatch[1] : ''}`;
+    } else if (name.includes('EV')) {
+      const floorMatch = name.match(/Floor (\d+)/);
+      return `EV ${floorMatch ? floorMatch[1] : ''}`;
+    }
+    return name;
+  };
+  
+  // Helper function to get the appropriate CSS class for crowd level
+  const getCrowdLevelClass = (crowdLevel: string) => {
+    switch(crowdLevel) {
+      case 'high': return 'bg-red-500';
+      case 'medium': return 'bg-yellow-500';
+      case 'low': return 'bg-green-500';
+      default: return 'bg-gray-500';
     }
   };
 
@@ -276,90 +383,89 @@ const CampusMap: React.FC<CampusMapProps> = ({ className = '' }) => {
         </h2>
       </div>
       
-      <div className="flex flex-col md:flex-row" style={{ height: '500px' }}>
-        {/* Sidebar */}
-        {showSidebar && (
-          <div className="w-full md:w-64 bg-secondary-bg border-r border-accent overflow-y-auto p-3">
-            {/* LB Building with floors */}
-            <div className="building-section mb-3">
+      {/* Building menu bar */}
+      <div className="flex flex-wrap gap-2 p-3 border-b border-accent bg-primary-bg">
+        {Object.entries(buildings).map(([id, building]) => (
+          <button 
+            key={id}
+            onClick={() => focusLocation(id)}
+            className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeLocation === id ? 'bg-accent text-black' : 'bg-secondary-bg text-accent hover:bg-accent hover:bg-opacity-20'}`}
+          >
+            {building.name}
+          </button>
+        ))}
+      </div>
+      
+      <div className="flex flex-col md:flex-row h-[500px]">
+        {/* Top crowded places with bars */}
+        <div className="w-full md:w-64 bg-secondary-bg border-r border-accent overflow-y-auto p-3">
+          <h3 className="text-lg font-bold text-accent mb-4">Top Crowded Places</h3>
+          
+          {topCrowdedPlaces.map((place) => (
+            <div 
+              key={place.id} 
+              className="neon-bar-container"
+              onClick={() => focusLocation(place.id)}
+            >
               <div 
-                className={`building-header flex justify-between items-center bg-primary-bg p-2 border-l-2 border-accent cursor-pointer ${activeLocation?.startsWith('lb') ? 'border-l-4' : ''}`}
-                onClick={() => toggleFloors('lb')}
+                className={`neon-bar neon-bar-${place.crowdLevel}`}
+                style={{ width: `${getCrowdPercentage(place.crowdLevel)}%` }}
               >
-                <span>LB Library</span>
-                <span className={`crowd-level px-2 py-1 rounded text-xs font-bold ${buildings.lb.crowdLevel === 'high' ? 'bg-red-500' : buildings.lb.crowdLevel === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`}>
-                  {buildings.lb.crowdLevel.charAt(0).toUpperCase() + buildings.lb.crowdLevel.slice(1)}
-                </span>
-              </div>
-              <div id="lb-floors" className="building-floors ml-3">
-                {buildings.lb.floors.map(floorId => {
-                  const floor = locations[floorId];
-                  return (
-                    <div 
-                      key={floorId}
-                      className={`floor-item flex justify-between items-center p-2 my-1 bg-primary-bg cursor-pointer ${activeLocation === floorId ? 'border-l-2 border-accent' : ''}`}
-                      onClick={() => focusLocation(floorId)}
-                    >
-                      <span>Floor {floorId.split('-')[1]}</span>
-                      <span className={`crowd-level px-2 py-1 rounded text-xs font-bold ${floor.crowdLevel === 'high' ? 'bg-red-500' : floor.crowdLevel === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`}>
-                        {floor.crowdLevel.charAt(0).toUpperCase() + floor.crowdLevel.slice(1)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            
-            {/* Hall Building with floors */}
-            <div className="building-section mb-3">
-              <div 
-                className={`building-header flex justify-between items-center bg-primary-bg p-2 border-l-2 border-accent cursor-pointer ${activeLocation?.startsWith('hall') ? 'border-l-4' : ''}`}
-                onClick={() => toggleFloors('hall')}
-              >
-                <span>Hall Building</span>
-                <span className={`crowd-level px-2 py-1 rounded text-xs font-bold ${buildings.hall.crowdLevel === 'high' ? 'bg-red-500' : buildings.hall.crowdLevel === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`}>
-                  {buildings.hall.crowdLevel.charAt(0).toUpperCase() + buildings.hall.crowdLevel.slice(1)}
-                </span>
-              </div>
-              <div id="hall-floors" className="building-floors ml-3">
-                {buildings.hall.floors.map(floorId => {
-                  const floor = locations[floorId];
-                  return (
-                    <div 
-                      key={floorId}
-                      className={`floor-item flex justify-between items-center p-2 my-1 bg-primary-bg cursor-pointer ${activeLocation === floorId ? 'border-l-2 border-accent' : ''}`}
-                      onClick={() => focusLocation(floorId)}
-                    >
-                      <span>Floor {floorId.split('-')[1]}</span>
-                      <span className={`crowd-level px-2 py-1 rounded text-xs font-bold ${floor.crowdLevel === 'high' ? 'bg-red-500' : floor.crowdLevel === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`}>
-                        {floor.crowdLevel.charAt(0).toUpperCase() + floor.crowdLevel.slice(1)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            
-            {/* Other buildings */}
-            {['ev', 'mb', 'fg'].map(buildingId => {
-              const building = buildings[buildingId as keyof typeof buildings];
-              const location = locations[buildingId];
-              return (
-                <div key={buildingId} className="building-section mb-3">
-                  <div 
-                    className={`building-header flex justify-between items-center bg-primary-bg p-2 border-l-2 border-accent cursor-pointer ${activeLocation === buildingId ? 'border-l-4' : ''}`}
-                    onClick={() => focusLocation(buildingId)}
-                  >
-                    <span>{building.name}</span>
-                    <span className={`crowd-level px-2 py-1 rounded text-xs font-bold ${location.crowdLevel === 'high' ? 'bg-red-500' : location.crowdLevel === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`}>
-                      {location.crowdLevel.charAt(0).toUpperCase() + location.crowdLevel.slice(1)}
-                    </span>
+                <div className="neon-bar-content">
+                  <div className="neon-bar-name">{getAbbreviatedName(place.name)}</div>
+                  <div className="neon-bar-level">{getCrowdLevelText(place.crowdLevel)}</div>
+                  <div className="neon-bar-info">
+                    <span className="neon-bar-time">{place.lastUpdated}</span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            </div>
+          ))}
+          
+          {/* Floor details section */}
+          {activeLocation && activeLocation.includes('-') && (
+            <div className="mt-6 p-3 bg-primary-bg rounded border border-accent">
+              <h4 className="text-sm font-bold text-accent mb-2">Floor Details</h4>
+              <div>
+                <p className="text-sm">{locationData[activeLocation]?.name}</p>
+                <p className="text-xs mt-1">People: {locationData[activeLocation]?.peopleCount}</p>
+                <p className="text-xs">Updated: {locationData[activeLocation]?.lastUpdated}</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Building floors section - show when a building is selected */}
+          {activeLocation && !activeLocation.includes('-') && buildings[activeLocation as keyof typeof buildings]?.floors?.length > 0 && (
+            <div className="mt-6">
+              <h4 className="text-sm font-bold text-accent mb-2">Floors</h4>
+              <div className="ml-2">
+                {buildings[activeLocation as keyof typeof buildings].floors.map(floorId => {
+                  const floor = locationData[floorId];
+                  const floorNumber = floorId.split('-')[1];
+                  return (
+                    <div 
+                      key={floorId}
+                      className="neon-bar-container"
+                      onClick={() => focusLocation(floorId)}
+                    >
+                      <div 
+                        className={`neon-bar neon-bar-${floor.crowdLevel}`}
+                        style={{ width: `${getCrowdPercentage(floor.crowdLevel)}%` }}
+                      ></div>
+                      <div className="neon-bar-content">
+                        <div className="neon-bar-name">{getAbbreviatedName(floor.name)}</div>
+                        <div className="neon-bar-level">{getCrowdLevelText(floor.crowdLevel)}</div>
+                        <div className="neon-bar-info">
+                          <span className="neon-bar-time">{floor.lastUpdated}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
         
         {/* Map container */}
         <div className="flex-grow relative">
@@ -370,7 +476,7 @@ const CampusMap: React.FC<CampusMapProps> = ({ className = '' }) => {
             </div>
           )}
           <button 
-            className="absolute top-2 right-2 z-10 bg-primary-bg text-accent p-2 rounded-full border border-accent"
+            className="absolute bottom-4 right-4 bg-primary-bg border border-accent p-2 rounded-full text-accent hover:bg-opacity-80 z-10"
             onClick={() => setShowSidebar(!showSidebar)}
           >
             {showSidebar ? '←' : '→'}

@@ -189,3 +189,99 @@ body {
 .building-floors.active {
   display: block;
 }
+
+/* Neon crowd bars */
+.neon-bar-container {
+  height: 24px;
+  border-radius: 4px;
+  position: relative;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  overflow: visible;
+}
+
+.neon-bar-container:hover {
+  transform: translateY(-2px);
+}
+
+.neon-bar {
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  color: white;
+  transition: width 0.5s ease-in-out;
+  z-index: 1;
+}
+
+.neon-bar-high {
+  background-color: #aa0000;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.7);
+}
+
+.neon-bar-medium {
+  background-color: #aa7700;
+  box-shadow: 0 0 5px rgba(255, 170, 0, 0.7);
+}
+
+.neon-bar-low {
+  background-color: #007700;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
+}
+
+.neon-bar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  z-index: 5;
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: 0 12px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.neon-bar-name {
+  font-weight: 600;
+  color: #FFD700;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+}
+
+.neon-bar-level {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  color: white;
+  z-index: 1;
+}
+
+.neon-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  opacity: 0.9;
+  color: white;
+}
+
+.neon-bar-time {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
