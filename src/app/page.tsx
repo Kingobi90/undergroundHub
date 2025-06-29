@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import VideoCarousel from '@/components/VideoCarousel';
 import EventsSection from '@/components/EventsSection';
@@ -9,6 +9,7 @@ import MoraleBar from '@/components/MoraleBar';
 import HighlightsBar from '@/components/HighlightsBar';
 import ThreadSection from '@/components/ThreadSection';
 import CampusMap from '@/components/CampusMap';
+import UnifiedFeed from '@/components/LiveFeed/UnifiedFeed/UnifiedFeed';
 
 // Mock data for demonstration
 const mockThreadData = [
@@ -245,6 +246,8 @@ const mockPolls = [
 ];
 
 export default function Home() {
+  const [feedView, setFeedView] = useState<'classic' | 'unified'>('unified');
+
   return (
     <main className="min-h-screen bg-primary-bg">
       <Header />
@@ -266,39 +269,63 @@ export default function Home() {
         ]}
       />
       
-      <div className="container mx-auto px-4 pt-40 pb-10">
-        <div className="flex flex-col lg:flex-row gap-6 p-4">
-          {/* Left column - Video Feed with exact dimensions */}
-          <div className="w-full lg:w-[680px] flex-shrink-0">
-            <div className="h-[896px]">
-              <VideoCarousel videos={mockNewsData.videos} />
+      {/* View toggle buttons */}
+      <div className="container mx-auto px-4 pt-24 pb-4">
+        <div className="flex justify-center gap-4">
+          <button 
+            onClick={() => setFeedView('unified')} 
+            className={`px-4 py-2 rounded-full ${feedView === 'unified' ? 'bg-accent text-white' : 'bg-secondary-bg text-text-primary'}`}
+          >
+            Twitter-Style Feed
+          </button>
+          <button 
+            onClick={() => setFeedView('classic')} 
+            className={`px-4 py-2 rounded-full ${feedView === 'classic' ? 'bg-accent text-white' : 'bg-secondary-bg text-text-primary'}`}
+          >
+            Classic View
+          </button>
+        </div>
+      </div>
+      
+      {feedView === 'unified' ? (
+        <div className="container mx-auto px-4 pb-10">
+          <UnifiedFeed />
+        </div>
+      ) : (
+        <div className="container mx-auto px-4 pb-10">
+          <div className="flex flex-col lg:flex-row gap-6 p-4">
+            {/* Left column - Video Feed with exact dimensions */}
+            <div className="w-full lg:w-[680px] flex-shrink-0">
+              <div className="h-[896px]">
+                <VideoCarousel videos={mockNewsData.videos} />
+              </div>
+            </div>
+            
+            {/* Right column - Thread Section */}
+            <div className="flex-grow">
+              <ThreadSection threads={mockThreadData} />
             </div>
           </div>
           
-          {/* Right column - Thread Section */}
-          <div className="flex-grow">
-            <ThreadSection threads={mockThreadData} />
+          {/* Bottom row for other sections */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 mt-6">
+            <EventsSection events={mockEvents} />
+            <PollSection polls={mockPolls} />
+            
+            {/* Ad space */}
+            <div className="bg-secondary-bg border border-accent rounded-lg p-4 text-center lg:col-span-2">
+              <p className="text-text-secondary text-sm mb-2">SPONSORED</p>
+              <p className="text-accent font-bold">Campus Bookstore</p>
+              <p className="text-text-primary text-sm">50% off all UG merch this week!</p>
+            </div>
+            
+            {/* Campus Map */}
+            <div className="lg:col-span-2 mt-6">
+              <CampusMap />
+            </div>
           </div>
         </div>
-        
-        {/* Bottom row for other sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 mt-6">
-          <EventsSection events={mockEvents} />
-          <PollSection polls={mockPolls} />
-          
-          {/* Ad space */}
-          <div className="bg-secondary-bg border border-accent rounded-lg p-4 text-center lg:col-span-2">
-            <p className="text-text-secondary text-sm mb-2">SPONSORED</p>
-            <p className="text-accent font-bold">Campus Bookstore</p>
-            <p className="text-text-primary text-sm">50% off all UG merch this week!</p>
-          </div>
-          
-          {/* Campus Map */}
-          <div className="lg:col-span-2 mt-6">
-            <CampusMap />
-          </div>
-        </div>
-      </div>
+      )}
       
       <footer className="bg-secondary-bg border-t border-accent-30 py-4">
         <div className="container mx-auto px-4 text-center text-text-secondary">

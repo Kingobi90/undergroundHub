@@ -35,6 +35,7 @@ const Header: React.FC = () => {
           <Link href="/spotted" className="nav-link">Spotted</Link>
           <Link href="/events" className="nav-link">Events</Link>
           <Link href="/polls" className="nav-link">Polls</Link>
+          <Link href="/sos" className="nav-link text-accent font-semibold">SOS</Link>
         </nav>
 
         {/* Submit Button */}
@@ -57,6 +58,7 @@ const Header: React.FC = () => {
             <Link href="/spotted" className="nav-link block py-2">Spotted</Link>
             <Link href="/events" className="nav-link block py-2">Events</Link>
             <Link href="/polls" className="nav-link block py-2">Polls</Link>
+            <Link href="/sos" className="nav-link block py-2 text-accent font-semibold">SOS</Link>
             <button className="btn btn-primary w-full mt-4">Submit</button>
           </div>
         </div>
