@@ -278,7 +278,7 @@ const FeedItemCard: React.FC<FeedItemCardProps> = ({ item, onVote }) => {
               />
             )}
             {item.mediaType === 'audio' && (
-              <AudioPlayer audioUrl={item.mediaUrl} />
+              <AudioPlayer audioUrl={item.mediaUrl} duration="0:30" />
             )}
           </div>
         )}
