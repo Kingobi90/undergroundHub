@@ -32,10 +32,10 @@ const Header: React.FC = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
           <Link href="/feed" className="nav-link">Live Feed</Link>
+          <Link href="/sos" className="nav-link text-accent font-semibold">SOS</Link>
           <Link href="/spotted" className="nav-link">Spotted</Link>
           <Link href="/events" className="nav-link">Events</Link>
           <Link href="/polls" className="nav-link">Polls</Link>
-          <Link href="/sos" className="nav-link text-accent font-semibold">SOS</Link>
         </nav>
 
         {/* Submit Button */}
@@ -55,10 +55,10 @@ const Header: React.FC = () => {
         <div className="md:hidden bg-primary-bg border-b border-accent-50">
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
             <Link href="/feed" className="nav-link block py-2">Live Feed</Link>
+            <Link href="/sos" className="nav-link block py-2 text-accent font-semibold">SOS</Link>
             <Link href="/spotted" className="nav-link block py-2">Spotted</Link>
             <Link href="/events" className="nav-link block py-2">Events</Link>
             <Link href="/polls" className="nav-link block py-2">Polls</Link>
-            <Link href="/sos" className="nav-link block py-2 text-accent font-semibold">SOS</Link>
             <button className="btn btn-primary w-full mt-4">Submit</button>
           </div>
         </div>
