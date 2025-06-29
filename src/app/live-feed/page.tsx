@@ -11,7 +11,7 @@ export default function LiveFeedPage() {
   return (
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-white">Campus Live Feed</h1>
-      <LiveFeedSection userId="user123" />
+      <LiveFeedSection />
     </main>
   );
 }
