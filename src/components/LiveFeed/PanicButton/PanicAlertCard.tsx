@@ -16,7 +16,8 @@ const PanicAlertCard: React.FC<Props> = ({ alert }) => {
   };
 
   const handleHelp = () => {
-    helpWithPanic(alert.id);
+    // Pass the current user's ID (using 'helper-user' as default for now)
+    helpWithPanic(alert.id, 'helper-user');
   };
 
   return (
