@@ -22,7 +22,7 @@ export default function RootLayout({
       <body className={`${inter.className} flex flex-col min-h-screen`}>
         <SOSProvider>
           <LiveFeedProvider>
-            <div className="flex-grow">
+            <div className="flex-grow pt-16"> {/* Added padding-top to account for fixed header */}
               {children}
             </div>
             <Footer />

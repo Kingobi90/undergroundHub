@@ -67,7 +67,9 @@ const WhisperRecorder: React.FC = () => {
       content: recordingContent,
       audioUrl: '/mock-audio/recording.mp3', // In a real implementation, this would be the actual audio URL
       duration: formatTime(recordingTime),
-      category: selectedCategory
+      category: selectedCategory,
+      anonymousId: 'user-' + Math.random().toString(36).substring(2, 8), // Generate a random anonymous ID
+      isAfterHours: new Date().getHours() >= 22 || new Date().getHours() < 6 // Consider after hours between 10PM and 6AM
     });
     
     // Reset form

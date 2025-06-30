@@ -36,7 +36,8 @@ const EventCreator: React.FC<Props> = ({ onClose }) => {
       endDate: endDateTime,
       category,
       isOfficial,
-      bannerImageUrl: bannerImage
+      bannerImageUrl: bannerImage || undefined, // Convert null to undefined to match the expected type
+      organizer: isOfficial ? 'Concordia University' : 'Student Event'
     });
     
     onClose();

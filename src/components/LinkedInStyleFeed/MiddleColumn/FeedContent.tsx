@@ -55,19 +55,39 @@ const FeedContent: React.FC = () => {
     }));
   };
 
+  // Track which comment we're replying to
+  const [replyingTo, setReplyingTo] = useState<Record<string, string>>({});
+
   const submitComment = (id: string, e: React.FormEvent) => {
     e.preventDefault();
     if (commentText[id]?.trim()) {
       // Generate a random 4-digit anonymous ID
       const anonymousId = Math.floor(1000 + Math.random() * 9000).toString();
-      addCommentToFeedItem(id, commentText[id], anonymousId);
       
-      // Clear input
+      // Get the parent ID (either a post ID or a comment ID)
+      const parentId = replyingTo[id] || id;
+      
+      addCommentToFeedItem(id, commentText[id], anonymousId, parentId);
+      
+      // Clear input and reset replyingTo
       setCommentText(prev => ({
         ...prev,
         [id]: ''
       }));
+      setReplyingTo(prev => ({
+        ...prev,
+        [id]: ''
+      }));
     }
+  };
+
+  const handleReplyClick = (postId: string, commentId: string) => {
+    setReplyingTo(prev => ({
+      ...prev,
+      [postId]: commentId
+    }));
+    // Focus the comment input
+    document.getElementById(`comment-input-${postId}`)?.focus();
   };
 
   const handleShare = (id: string) => {
@@ -197,29 +217,85 @@ const FeedContent: React.FC = () => {
                   <p className="text-text-secondary text-sm">No comments yet. Be the first!</p>
                 ) : (
                   <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {item.comments.map((comment: Comment) => (
-                      <div key={comment.id} className="flex items-start">
-                        <div className="w-6 h-6 rounded-full overflow-hidden mr-2 bg-accent-30 flex items-center justify-center text-white text-xs font-bold">
-                          {comment.anonymousId.charAt(0)}
-                        </div>
-                        <div className="bg-accent-30 rounded-lg p-2 flex-1">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs font-medium text-white">Anonymous {comment.anonymousId}</span>
-                            <span className="text-xs text-text-secondary">{formatRelativeTime(comment.timestamp)}</span>
+                    {/* Render top-level comments (those with parentId === postId) */}
+                    {item.comments
+                      .filter((comment: Comment) => comment.parentId === item.id)
+                      .map((comment: Comment) => (
+                        <div key={comment.id} className="flex items-start">
+                          <div className="w-6 h-6 rounded-full overflow-hidden mr-2 bg-accent-30 flex items-center justify-center text-white text-xs font-bold">
+                            {comment.anonymousId.charAt(0)}
                           </div>
-                          <p className="text-sm text-text-primary">{comment.content}</p>
+                          <div className="flex-1">
+                            <div className="bg-accent-30 rounded-lg p-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs font-medium text-white">Anonymous {comment.anonymousId}</span>
+                                <span className="text-xs text-text-secondary">{formatRelativeTime(comment.timestamp)}</span>
+                              </div>
+                              <p className="text-sm text-text-primary">{comment.content}</p>
+                            </div>
+                            
+                            {/* Reply button */}
+                            <button 
+                              className="text-xs text-accent mt-1 hover:underline"
+                              onClick={() => handleReplyClick(item.id, comment.id)}
+                            >
+                              Reply
+                            </button>
+                            
+                            {/* Render replies to this comment */}
+                            <div className="ml-4 mt-2 space-y-2">
+                              {item.comments
+                                .filter((reply: Comment) => reply.parentId === comment.id)
+                                .map((reply: Comment) => (
+                                  <div key={reply.id} className="flex items-start">
+                                    <div className="w-5 h-5 rounded-full overflow-hidden mr-2 bg-accent-30 flex items-center justify-center text-white text-xs font-bold">
+                                      {reply.anonymousId.charAt(0)}
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="bg-accent-30 rounded-lg p-2">
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-xs font-medium text-white">Anonymous {reply.anonymousId}</span>
+                                          <span className="text-xs text-text-secondary">{formatRelativeTime(reply.timestamp)}</span>
+                                        </div>
+                                        <p className="text-sm text-text-primary">{reply.content}</p>
+                                      </div>
+                                      <button 
+                                        className="text-xs text-accent mt-1 hover:underline"
+                                        onClick={() => handleReplyClick(item.id, reply.id)}
+                                      >
+                                        Reply
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))
+                              }
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 )}
                 
                 {/* Add comment form */}
                 <div className="mt-3">
+                  {replyingTo[item.id] && (
+                    <div className="flex justify-between items-center mb-1 bg-accent-30 rounded p-1 text-xs">
+                      <span className="text-text-secondary">
+                        Replying to comment from Anonymous {item.comments.find(c => c.id === replyingTo[item.id])?.anonymousId || ''}
+                      </span>
+                      <button 
+                        onClick={() => setReplyingTo(prev => ({ ...prev, [item.id]: '' }))}
+                        className="text-accent hover:text-accent-hover"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                   <form className="flex" onSubmit={(e) => submitComment(item.id, e)}>
                     <input 
+                      id={`comment-input-${item.id}`}
                       type="text" 
-                      placeholder="Write a comment..." 
+                      placeholder={replyingTo[item.id] ? "Write a reply..." : "Write a comment..."} 
                       className="flex-1 bg-accent-30 text-white rounded-l-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
                       value={commentText[item.id] || ''}
                       onChange={(e) => handleCommentChange(item.id, e.target.value)}
@@ -228,7 +304,7 @@ const FeedContent: React.FC = () => {
                       type="submit"
                       className="bg-accent text-white px-3 py-2 rounded-r-lg text-sm"
                     >
-                      Post
+                      {replyingTo[item.id] ? "Reply" : "Post"}
                     </button>
                   </form>
                 </div>

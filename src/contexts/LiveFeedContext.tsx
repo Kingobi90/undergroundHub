@@ -31,7 +31,7 @@ interface LiveFeedContextType {
   addFeedItem: (item: Omit<FeedItem, 'id' | 'timestamp' | 'upvotes' | 'downvotes' | 'comments'>) => void;
   upvoteFeedItem: (id: string) => void;
   downvoteFeedItem: (id: string) => void;
-  addCommentToFeedItem: (feedItemId: string, content: string, anonymousId: string) => void;
+  addCommentToFeedItem: (feedItemId: string, content: string, anonymousId: string, parentId?: string) => void;
 }
 
 const LiveFeedContext = createContext<LiveFeedContextType | undefined>(undefined);
@@ -352,7 +352,7 @@ export const LiveFeedProvider: React.FC<{ children: ReactNode }> = ({ children }
     );
   };
 
-  const addCommentToFeedItem = (feedItemId: string, content: string, anonymousId: string) => {
+  const addCommentToFeedItem = (feedItemId: string, content: string, anonymousId: string, parentId: string = '') => {
     setFeedItems(prev => 
       prev.map(item => {
         if (item.id === feedItemId) {
@@ -362,9 +362,19 @@ export const LiveFeedProvider: React.FC<{ children: ReactNode }> = ({ children }
             content,
             timestamp: new Date(),
             likes: 0,
-            parentId: feedItemId
+            parentId: parentId || feedItemId // Use the provided parentId (comment ID) or default to the post ID
           };
-          return { ...item, comments: [newComment, ...item.comments] };
+          
+          // For replies to comments, we want to add them at the end to maintain chronological order
+          // For top-level comments, we add them at the beginning to show newest first
+          const isReplyToComment = parentId && parentId !== feedItemId;
+          
+          return { 
+            ...item, 
+            comments: isReplyToComment 
+              ? [...item.comments, newComment]  // Add replies at the end
+              : [newComment, ...item.comments]  // Add top-level comments at the beginning
+          };
         }
         return item;
       })
