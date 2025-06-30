@@ -19,6 +19,12 @@ const FeedContent: React.FC = () => {
   const [commentText, setCommentText] = useState<Record<string, string>>({});
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const observerTarget = useRef<HTMLDivElement>(null);
+  const [isClient, setIsClient] = useState(false);
+  
+  // This ensures we only render time-based content on the client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Format relative time
   const formatRelativeTime = (date: Date) => {
@@ -141,7 +147,9 @@ const FeedContent: React.FC = () => {
               </div>
               <div>
                 <h4 className="font-bold text-white">Anonymous {item.anonymousId}</h4>
-                <p className="text-xs text-text-secondary">{formatRelativeTime(item.timestamp)}</p>
+                <p className="text-xs text-text-secondary">
+                  {isClient ? formatRelativeTime(item.timestamp) : 'Loading...'}
+                </p>
               </div>
             </div>
             
@@ -229,7 +237,9 @@ const FeedContent: React.FC = () => {
                             <div className="bg-accent-30 rounded-lg p-2">
                               <div className="flex justify-between items-center">
                                 <span className="text-xs font-medium text-white">Anonymous {comment.anonymousId}</span>
-                                <span className="text-xs text-text-secondary">{formatRelativeTime(comment.timestamp)}</span>
+                                <span className="text-xs text-text-secondary">
+                                  {isClient ? formatRelativeTime(comment.timestamp) : 'Loading...'}
+                                </span>
                               </div>
                               <p className="text-sm text-text-primary">{comment.content}</p>
                             </div>
@@ -255,7 +265,9 @@ const FeedContent: React.FC = () => {
                                       <div className="bg-accent-30 rounded-lg p-2">
                                         <div className="flex justify-between items-center">
                                           <span className="text-xs font-medium text-white">Anonymous {reply.anonymousId}</span>
-                                          <span className="text-xs text-text-secondary">{formatRelativeTime(reply.timestamp)}</span>
+                                          <span className="text-xs text-text-secondary">
+                                            {isClient ? formatRelativeTime(reply.timestamp) : 'Loading...'}
+                                          </span>
                                         </div>
                                         <p className="text-sm text-text-primary">{reply.content}</p>
                                       </div>
