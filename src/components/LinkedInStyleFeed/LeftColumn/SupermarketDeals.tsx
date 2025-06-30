@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../../Card';
 import { FaBookmark } from 'react-icons/fa';
 
@@ -50,6 +50,12 @@ const SupermarketDeals: React.FC<SupermarketDealsProps> = ({
   ]
 }) => {
   const [savedDeals, setSavedDeals] = useState<Record<string, boolean>>({});
+  const [isClient, setIsClient] = useState(false);
+  
+  // This ensures we only render time-based content on the client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   const toggleSave = (id: string) => {
     setSavedDeals(prev => ({
@@ -87,7 +93,9 @@ const SupermarketDeals: React.FC<SupermarketDealsProps> = ({
             <p className="text-sm text-text-secondary">{deal.item}</p>
             <div className="flex justify-between items-center mt-1">
               <p className="text-xs text-accent line-through">{deal.originalPrice}</p>
-              <span className="text-xs text-text-secondary">{formatExpiration(deal.expiresAt)}</span>
+              <span className="text-xs text-text-secondary">
+                {isClient ? formatExpiration(deal.expiresAt) : 'Loading...'}
+              </span>
             </div>
             <button 
               onClick={() => toggleSave(deal.id)}
