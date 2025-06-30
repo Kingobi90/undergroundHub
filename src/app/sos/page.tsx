@@ -1,16 +1,13 @@
 "use client";
 
 import React from 'react';
-import Header from '../../../components/Header';
-import SOSSection from '../../../components/SOSSection';
 
 export default function SOSPage() {
   return (
     <main className="min-h-screen bg-primary-bg">
-      <Header />
-      
-      <div className="container mx-auto px-4 pt-24 pb-10">
-        <SOSSection />
+      <div className="pt-20 p-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Campus SOS</h1>
+        <p>SOS services are temporarily unavailable. Please check back later.</p>
       </div>
       
       <footer className="bg-secondary-bg border-t border-accent-30 py-4">
