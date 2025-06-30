@@ -28,11 +28,40 @@ module.exports = {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        'continuous-scroll': {
+          '0%': { transform: 'translateY(0)' },
+          '100%': { transform: 'translateY(-100%)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.5s ease-out',
+        'continuous-scroll': 'continuous-scroll 30s linear infinite',
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.custom-scrollbar': {
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: '#1e1e1e',
+            borderRadius: '100px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#333333',
+            borderRadius: '100px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: '#FEDA3C',
+          },
+          'scrollbarWidth': 'thin',
+          'scrollbarColor': '#333333 #1e1e1e',
+        },
+      }
+      addUtilities(newUtilities)
+    },
+  ],
 }

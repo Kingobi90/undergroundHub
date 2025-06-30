@@ -1,0 +1,19 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Force Next.js to use server-side rendering
+[build.environment]
+  NETLIFY_NEXT_PLUGIN_SKIP = "false"
+  NODE_ENV = "production"
+  NEXT_PRIVATE_TARGET = "server"
+
+# Process CSS properly
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Handle redirects for SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
