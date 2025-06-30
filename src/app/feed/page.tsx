@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import Header from '@/components/Header';
-import LinkedInStyleFeed from '@/components/LinkedInStyleFeed';
+import Header from '../../../components/Header';
+import LinkedInStyleFeed from '../../../components/LinkedInStyleFeed';
 
 export default function LiveFeedPage() {
   return (

@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import Header from '@/components/Header';
-import SOSSection from '@/components/SOSSection';
+import Header from '../../../components/Header';
+import SOSSection from '../../../components/SOSSection';
 
 export default function SOSPage() {
   return (

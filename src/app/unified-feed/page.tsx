@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import UnifiedFeed from '@/components/LiveFeed/UnifiedFeed/UnifiedFeed';
-import Header from '@/components/Header';
+import UnifiedFeed from '../../../components/LiveFeed/UnifiedFeed/UnifiedFeed';
+import Header from '../../../components/Header';
 
 export default function UnifiedFeedPage() {
   return (
