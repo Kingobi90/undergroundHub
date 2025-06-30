@@ -201,9 +201,11 @@ export default function Home() {
             </div>
           </div>
           <div className="flex space-x-3">
-            <button className="bg-transparent hover:bg-gray-800 px-4 py-1 rounded-full text-sm font-medium border border-gray-700">
-              Log in
-            </button>
+            <a href="/live-feed">
+              <button className="bg-transparent hover:bg-gray-800 px-4 py-1 rounded-full text-sm font-medium border border-gray-700">
+                Log in
+              </button>
+            </a>
             <button className="bg-white hover:bg-gray-200 text-black px-4 py-1 rounded-full text-sm font-medium">
               Sign up
             </button>
@@ -404,12 +406,14 @@ export default function Home() {
                 </div>
                 
                 <div className="mt-6 flex items-center justify-center">
-                  <button className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-full text-base font-bold flex items-center">
-                    <span className="mr-2">Submit a post</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                    </svg>
-                  </button>
+                  <a href="/live-feed">
+                    <button className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-full text-base font-bold flex items-center">
+                      <span className="mr-2">Submit a post</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </a>
                 </div>
                 
                 <p className="text-xs text-gray-500 text-center mt-4">
