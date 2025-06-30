@@ -1,6 +1,5 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Header from '@/components/Header';
 
 export const metadata: Metadata = {
   title: 'Live Feed - Underground Campus Hub',
@@ -14,7 +13,9 @@ export default function FeedLayout({
 }) {
   return (
     <>
-      <Header />
+      <div className="bg-secondary-bg p-4 fixed top-0 w-full z-10">
+        <h1 className="text-xl font-bold">UG Campus Hub</h1>
+      </div>
       {children}
     </>
   );

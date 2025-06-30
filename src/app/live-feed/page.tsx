@@ -1,6 +1,5 @@
 import React from 'react';
 import { Metadata } from 'next';
-import LiveFeedSection from '@/components/LiveFeedSection';
 
 export const metadata: Metadata = {
   title: 'Live Feed - Underground Campus Hub',
@@ -9,9 +8,11 @@ export const metadata: Metadata = {
 
 export default function LiveFeedPage() {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-8 pt-20">
       <h1 className="text-3xl font-bold mb-6 text-white">Campus Live Feed</h1>
-      <LiveFeedSection />
+      <div className="text-center p-8 bg-secondary-bg rounded-lg">
+        <p className="text-lg">Live feed content is temporarily unavailable. Please check back later.</p>
+      </div>
     </main>
   );
 }
