@@ -1,15 +1,15 @@
 import React from 'react';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { SOSProvider } from '@/contexts/SOSContext';
-import MotivationBanner from '@/components/sos/MotivationBanner';
-import PomodoroTimer from '@/components/sos/PomodoroTimer';
-import ExamCountdown from '@/components/sos/ExamCountdown';
-import PanicButton from '@/components/sos/PanicButton';
-import StudyMaterialsGrid from '@/components/sos/StudyMaterialsGrid';
-import ActiveEmergencies from '@/components/sos/ActiveEmergencies';
-import ResourceRadar from '@/components/sos/ResourceRadar';
-import StudyJournal from '@/components/sos/StudyJournal';
+import { SOSProvider } from '../contexts/SOSContext';
+import MotivationBanner from './sos/MotivationBanner';
+import PomodoroTimer from './sos/PomodoroTimer';
+import ExamCountdown from './sos/ExamCountdown';
+import PanicButton from './sos/PanicButton';
+import StudyMaterialsGrid from './sos/StudyMaterialsGrid';
+import ActiveEmergencies from './sos/ActiveEmergencies';
+import ResourceRadar from './sos/ResourceRadar';
+import StudyJournal from './sos/StudyJournal';
 
 interface SOSSectionProps {
   userId?: string;

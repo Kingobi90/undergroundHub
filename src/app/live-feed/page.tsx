@@ -1,5 +1,8 @@
+"use client";
+
 import React from 'react';
 import { Metadata } from 'next';
+import LinkedInStyleFeed from '../../components/LinkedInStyleFeed';
 
 export const metadata: Metadata = {
   title: 'Live Feed - Underground Campus Hub',
@@ -8,11 +11,11 @@ export const metadata: Metadata = {
 
 export default function LiveFeedPage() {
   return (
-    <main className="container mx-auto px-4 py-8 pt-20">
-      <h1 className="text-3xl font-bold mb-6 text-white">Campus Live Feed</h1>
-      <div className="text-center p-8 bg-secondary-bg rounded-lg">
-        <p className="text-lg">Live feed content is temporarily unavailable. Please check back later.</p>
+    <main className="min-h-screen bg-primary-bg pt-20">
+      <div className="bg-secondary-bg p-4 fixed top-0 w-full z-10">
+        <h1 className="text-xl font-bold">UG Campus Hub</h1>
       </div>
+      <LinkedInStyleFeed />
     </main>
   );
 }
